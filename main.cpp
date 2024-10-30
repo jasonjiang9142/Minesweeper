@@ -11,27 +11,37 @@ int main()
     // create the interface
     RenderWindow window(VideoMode(400, 400), "MineSweeper");
     Texture texture;
-    texture.loadFromFile("images/tiles.jpg");
+
+    // conduct error check for the image
+    if (!texture.loadFromFile("images/tiles.jpg"))
+    {
+        std::cout << "Error loading image" << std::endl;
+        return 1;
+    }
+
     Sprite sprite(texture);
+    const int tile_size = 32; // size of the tiles
 
     // create the board
-    const int gridSize = 9;
-    int width = 10;
-    int running_grid[gridSize][gridSize] = {0};
-    int answer_grid[gridSize][gridSize] = {0};
+    const int grid_size = 9;
+    int running_grid[grid_size][grid_size] = {0};
+    int answer_grid[grid_size][grid_size] = {0};
 
     // fill the board with bombs represented as 10
     int num_bombs = 10;
     while (num_bombs > 0)
     {
-        int x = rand() % gridSize;
-        int y = rand() % gridSize;
+        int x = (std::rand() % 9);
+        int y = (std::rand() % 9);
 
-        if (answer_grid[x][y] != 10)
+        if (x >= 0 && x < 9 && y >= 0 && y < 9)
         {
-            answer_grid[x][y] = 10;
-            num_bombs -= 1;
-        };
+            if (answer_grid[x][y] != 10)
+            {
+                answer_grid[x][y] = 10;
+                num_bombs -= 1;
+            };
+        }
     }
 
     // fill the rest of the board with the numbers of bombs
@@ -72,52 +82,52 @@ int main()
         }
     }
 
-    // Run the program
+    // prints the board
+    for (int i = 0; i < 9; i++)
+    {
+        for (int j = 0; j < 9; j++)
+        {
+            std::cout << answer_grid[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    // game loop
     while (window.isOpen())
     {
-        // Process events
         Event event;
         while (window.pollEvent(event))
         {
+            // the window closes once we click on the close button
             if (event.type == Event::Closed)
             {
-                window.close(); // Close the window if the close event is triggered
+                window.close();
             }
         }
 
-        // Clear the window
         window.clear();
 
-        // Draw the grid
-        float cellSize = 400.0f / gridSize; // Calculate cell size
-        for (int i = 0; i < gridSize; i++)
+        // draw the board
+        for (int i = 0; i < 9; i++)
         {
-            for (int j = 0; j < gridSize; j++)
+            for (int j = 0; j < 9; j++)
             {
-                RectangleShape cell(Vector2f(cellSize, cellSize));
-                cell.setPosition(j * cellSize, i * cellSize);
-                cell.setOutlineColor(Color::Black);
-                cell.setOutlineThickness(1.0f); // Optional: add a border to the cells
-
-                // Set the fill color based on the cell value
-                if (answer_grid[i][j] == 10) // If there's a bomb
+                if (answer_grid[i][j] == 10)
                 {
-                    cell.setFillColor(Color::Red); // Bomb cells can be red
+                    sprite.setTextureRect(IntRect(tile_size * 9, 0, tile_size, tile_size));
                 }
                 else
                 {
-                    cell.setFillColor(Color::White); // Non-bomb cells can be white
+                    sprite.setTextureRect(IntRect(tile_size * answer_grid[i][j], 0, tile_size, tile_size));
                 }
-
-                window.draw(cell); // Draw the cell
+                sprite.setPosition(j * tile_size, i * tile_size);
+                window.draw(sprite);
             }
         }
 
-        // Display what has been drawn
-        window.display();
+        window.display(); // clear the window
     }
 
     // The program will end here when the window is closed
     return 0;
-    // end the program
 }
